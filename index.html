@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little Explorer Newsstand</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Floating shapes background */
+        .shapes {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+        
+        h1 {
+            color: #5a67d8;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 1.2rem;
+            font-weight: 400;
+        }
+        
+        /* Navigation tabs */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 20px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .tab-btn {
+            background: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tab-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        .tab-btn.active {
+            background: #ffd700;
+            color: #744210;
+            transform: scale(1.05);
+        }
+        
+        .tab-icon {
+            font-size: 1.5rem;
+        }
+        
+        /* Content container */
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Cards grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        /* News Card */
+        .news-card {
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-10px) rotate(1deg);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        
+        .card-image {
+            height: 180px;
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-image.ocean { background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%); }
+        .card-image.space { background: linear-gradient(45deg, #fa709a 0%, #fee140 100%); }
+        .card-image.animals { background: linear-gradient(45deg, #a8edea 0%, #fed6e3 100%); }
+        .card-image.science { background: linear-gradient(45deg, #ffecd2 0%, #fcb69f 100%); }
+        .card-image.nature { background: linear-gradient(45deg, #d299c2 0%, #fef9d7 100%); }
+        
+        .card-content {
+            padding: 25px;
+        }
+        
+        .card-category {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #edf2f7;
+            color: #5a67d8;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .card-title {
+            font-size: 1.4rem;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        
+        .card-preview {
+            color: #718096;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        .read-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 15px;
+            color: #5a67d8;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: gap 0.3s ease;
+        }
+        
+        .news-card:hover .read-more {
+            gap: 10px;
+        }
+        
+        /* Modal for reading */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.active {
+            display: flex;
+            animation: modalFadeIn 0.3s ease;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            padding: 40px;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from { transform: scale(0.8) translateY(50px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #fed7d7;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #c53030;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            background: #fc8181;
+            color: white;
+            transform: rotate(90deg);
+        }
+        
+        .modal-emoji {
+            font-size: 5rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 2rem;
+            color: #2d3748;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .modal-text {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+        
+        .fun-fact-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 20px;
+            border-radius: 20px;
+            margin-top: 20px;
+            border-left: 5px solid #e17055;
+        }
+        
+        .fun-fact-box h3 {
+            color: #d63031;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        /* Feedback Section in Modal */
+        .feedback-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #e2e8f0;
+            text-align: center;
+        }
+        
+        .feedback-title {
+            font-size: 1.3rem;
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .feedback-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .feedback-btn {
+            background: white;
+            border: 3px solid #e2e8f0;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .feedback-btn:hover {
+            transform: scale(1.2);
+        }
+        
+        .feedback-btn.selected {
+            border-color: #48bb78;
+            background: #c6f6d5;
+            transform: scale(1.1);
+        }
+        
+        .feedback-btn.thumbs-down.selected {
+            border-color: #fc8181;
+            background: #fed7d7;
+        }
+        
+        .feedback-message {
+            font-size: 1.1rem;
+            color: #48bb78;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            min-height: 30px;
+        }
+        
+        .feedback-message.show {
+            opacity: 1;
+        }
+        
+        /* Daily Challenge Section */
+        .challenge-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .challenge-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .challenge-title {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+        
+        .challenge-text {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            opacity: 0.95;
+        }
+        
+        .challenge-btn {
+            background: white;
+            color: #764ba2;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .challenge-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        /* Stats Dashboard */
+        .stats-card {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 30px;
+            border-radius: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .stats-title {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #744210;
+            margin-bottom: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #5a67d8;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .tab-btn { padding: 12px 20px; font-size: 1rem; }
+            .modal-content { padding: 30px 20px; }
+            .feedback-buttons { gap: 15px; }
+            .feedback-btn { width: 50px; height: 50px; font-size: 1.5rem; }
+        }
+        
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background shapes -->
+    <div class="shapes">
+        <div class="shape" style="top: 10%; left: 10%; font-size: 3rem; animation-delay: 0s;">⭐</div>
+        <div class="shape" style="top: 20%; right: 15%; font-size: 2.5rem; animation-delay: 2s;">🌙</div>
+        <div class="shape" style="bottom: 20%; left: 5%; font-size: 3.5rem; animation-delay: 4s;">☀️</div>
+        <div class="shape" style="bottom: 30%; right: 10%; font-size: 2rem; animation-delay: 1s;">🚀</div>
+        <div class="shape" style="top: 50%; left: 3%; font-size: 2.8rem; animation-delay: 3s;">🐠</div>
+    </div>
+
+    <header>
+        <h1>📚 Little Explorer Newsstand</h1>
+        <p class="subtitle">Discover amazing things about our world!</p>
+    </header>
+
+    <nav class="nav-tabs" role="tablist">
+        <button class="tab-btn active" onclick="showSection('news')" role="tab" aria-selected="true">
+            <span class="tab-icon">📰</span> Today's News
+        </button>
+        <button class="tab-btn" onclick="showSection('animals')" role="tab" aria-selected="false">
+            <span class="tab-icon">🦁</span> Animals
+        </button>
+        <button class="tab-btn" onclick="showSection('space')" role="tab" aria-selected="false">
+            <span class="tab-icon">🚀</span> Space
+        </button>
+        <button class="tab-btn" onclick="showSection('science')" role="tab" aria-selected="false">
+            <span class="tab-icon">🔬</span> Science
+        </button>
+        <button class="tab-btn" onclick="showSection('challenge')" role="tab" aria-selected="false">
+            <span class="tab-icon">🎯</span> Daily Challenge
+        </button>
+    </nav>
+
+    <main class="content-container">
+        <!-- Today's News Section - 20 Cards -->
+        <section id="news" class="section active" role="tabpanel">
+            <div class="cards-grid" id="newsGrid"></div>
+        </section>
+
+        <!-- Animals Section - 20 Cards -->
+        <section id="animals" class="section" role="tabpanel">
+            <div class="cards-grid" id="animalsGrid"></div>
+        </section>
+
+        <!-- Space Section - 20 Cards -->
+        <section id="space" class="section" role="tabpanel">
+            <div class="cards-grid" id="spaceGrid"></div>
+        </section>
+
+        <!-- Science Section - 20 Cards -->
+        <section id="science" class="section" role="tabpanel">
+            <div class="cards-grid" id="scienceGrid"></div>
+        </section>
+
+        <!-- Daily Challenge Section -->
+        <section id="challenge" class="section" role="tabpanel">
+            <div class="stats-card">
+                <h2 class="stats-title">🏆 Your Explorer Stats</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalRead">0</div>
+                        <div class="stat-label">Stories Read</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="likedCount">0</div>
+                        <div class="stat-label">Liked ❤️</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="currentStreak">0</div>
+                        <div class="stat-label">Day Streak</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="favoriteCategory">-</div>
+                        <div class="stat-label">Favorite Topic</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="challenge-card">
+                <div class="challenge-icon">🎯</div>
+                <h2 class="challenge-title">Today's Explorer Challenge!</h2>
+                <p class="challenge-text" id="challengeText">Can you find something blue in your room and draw it?</p>
+                <button class="challenge-btn" onclick="newChallenge()">Get New Challenge 🎲</button>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.9); border-radius: 20px;">
+                <h3 style="color: #5a67d8; margin-bottom: 10px;">📅 Today's Date</h3>
+                <p id="currentDate" style="font-size: 1.2rem; color: #4a5568;"></p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal -->
+    <div id="articleModal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-btn" onclick="closeModal()" aria-label="Close article">×</button>
+            <div class="modal-emoji" id="modalEmoji">📰</div>
+            <h2 class="modal-title" id="modalTitle">Article Title</h2>
+            <div class="modal-text" id="modalText">Article content goes here...</div>
+            <div class="fun-fact-box">
+                <h3>🌟 Extra Fun Fact!</h3>
+                <p id="modalExtra">Extra fun fact goes here...</p>
+            </div>
+            
+            <!-- Feedback Section -->
+            <div class="feedback-section">
+                <p class="feedback-title">Did you like this story?</p>
+                <div class="feedback-buttons">
+                    <button class="feedback-btn thumbs-up" onclick="submitFeedback(true)" title="Yes, I liked it!">👍</button>
+                    <button class="feedback-btn thumbs-down" onclick="submitFeedback(false)" title="Not really">👎</button>
+                </div>
+                <p class="feedback-message" id="feedbackMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Article content database - 20 cards per category, Age appropriate for 6 and under
+        const articles = {
+            news: [
+                {
+                    id: 'ocean',
+                    emoji: '🐋',
+                    category: 'Ocean',
+                    title: 'The Ocean is Earth\'s Biggest Neighborhood!',
+                    text: 'Oceans cover about 71% of Earth\'s surface - that means more than half of our planet is water! There are five big oceans: the Pacific, Atlantic, Indian, Southern, and Arctic. The Pacific is the biggest and deepest one. Coral reefs are like underwater cities where fish live - they are called the "rainforests of the sea" because so many animals live there!',
+                    extra: 'The deepest part of the ocean is called the Mariana Trench. It is deeper than Mount Everest is tall! But don\'t worry - most ocean animals live where the sunlight can reach.',
+                    color: 'ocean'
+                },
+                {
+                    id: 'bees',
+                    emoji: '🐝',
+                    category: 'Nature',
+                    title: 'Busy Bees Make Yummy Honey',
+                    text: 'Honeybees are super hard workers! To make just one pound of honey, bees have to visit over 10 million flowers. That is a lot of flying! They collect nectar from flowers and turn it into honey inside their hive. Honey is special because it never goes bad - scientists found honey in ancient Egypt that is over 3,000 years old and still good to eat!',
+                    extra: 'Bees talk to each other by dancing! When a bee finds good flowers, it does a special dance to tell other bees where to go.',
+                    color: 'nature'
+                },
+                {
+                    id: 'sun',
+                    emoji: '☀️',
+                    category: 'Space',
+                    title: 'The Sun is a Giant Star!',
+                    text: 'The Sun is a star at the center of our solar system. It is huge! If you could hollow out the Sun, you could fit one million Earths inside it. The Sun is very hot - about 10,000 degrees on the surface! But we need the Sun\'s warmth and light to live. It takes light from the Sun 8 minutes to travel to Earth.',
+                    extra: 'The Sun is actually white, not yellow! It looks yellow to us because of Earth\'s atmosphere. Astronauts see it as bright white in space!',
+                    color: 'space'
+                },
+                {
+                    id: 'butterfly',
+                    emoji: '🦋',
+                    category: 'Animals',
+                    title: 'Butterflies Taste with Their Feet!',
+                    text: 'Butterflies have a special superpower - they can taste with their feet! When a butterfly lands on a flower or leaf, it uses its feet to check if it is yummy and safe to eat. This helps mommy butterflies find the right plants to lay their eggs on. Caterpillars are very picky eaters, so mommies need to find the perfect plant!',
+                    extra: 'Butterflies also have four wings, not two! They have two big wings and two small wings that work together when they fly.',
+                    color: 'animals'
+                },
+                {
+                    id: 'moon',
+                    emoji: '🌙',
+                    category: 'Space',
+                    title: 'The Moon is Moving Away!',
+                    text: 'Every year, the Moon moves about 4 centimeters (that is about the width of your finger) farther away from Earth. Don\'t worry - it has been doing this for billions of years and will keep shining on us for a very long time! The Moon\'s gravity pulls on our oceans and helps create the tides.',
+                    extra: 'The Moon is shaped like a lemon, not a perfect circle! It looks round to us because of how the sunlight hits it.',
+                    color: 'space'
+                },
+                {
+                    id: 'sloth',
+                    emoji: '🦥',
+                    category: 'Animals',
+                    title: 'Sloths are Super Swimmers!',
+                    text: 'Sloths are known for being slow on land, but they are excellent swimmers! They can hold their breath underwater for up to 40 minutes. That is longer than dolphins can hold their breath! Sloths slow down their heart rate to save oxygen when they swim. Sometimes they even drop from trees into water to swim across rivers.',
+                    extra: 'Sloths only go to the bathroom once a week! They climb down from their trees and do a special dance at the bottom.',
+                    color: 'animals'
+                },
+                {
+                    id: 'rainbow',
+                    emoji: '🌈',
+                    category: 'Weather',
+                    title: 'Rainbows are Light Playing Tricks!',
+                    text: 'Rainbows happen when sunlight shines through raindrops in the air. The light bends and splits into seven colors: red, orange, yellow, green, blue, indigo, and violet. You can only see a rainbow when the sun is behind you and rain is in front of you. Every rainbow is actually a full circle, but we usually only see half of it!',
+                    extra: 'Rainbows can also appear at night! They are called "moonbows" and are made by moonlight instead of sunlight.',
+                    color: 'nature'
+                },
+                {
+                    id: 'volcano',
+                    emoji: '🌋',
+                    category: 'Earth',
+                    title: 'Volcanoes are Earth\'s Pressure Valves!',
+                    text: 'Volcanoes are openings in the Earth where hot melted rock called magma comes out. When magma reaches the surface, we call it lava. Volcanoes can be found on the ocean floor and even on other planets! The biggest volcano in our solar system is on Mars and is three times taller than Mount Everest.',
+                    extra: 'There is a volcano in Hawaii called Kilauea that has been erupting almost continuously since 1983!',
+                    color: 'nature'
+                },
+                {
+                    id: 'ants',
+                    emoji: '🐜',
+                    category: 'Insects',
+                    title: 'Ants are Super Strong!',
+                    text: 'Ants can lift up to 50 times their own body weight! That is like a human lifting a truck. Ants live in big families called colonies. Some colonies have millions of ants! They work together to build their homes, find food, and take care of their babies. Each ant has a special job to do.',
+                    extra: 'Ants don\'t have ears! They "hear" by feeling vibrations in the ground through their feet.',
+                    color: 'animals'
+                },
+                {
+                    id: 'trees',
+                    emoji: '🌳',
+                    category: 'Nature',
+                    title: 'Trees Talk to Each Other!',
+                    text: 'Trees can communicate with each other through their roots! They send messages using a special network of fungi in the soil. When one tree is being eaten by bugs, it can warn its neighbors. Trees also share food with each other through their roots. The biggest trees help the smaller ones grow!',
+                    extra: 'The oldest living tree is over 5,000 years old! It started growing before the pyramids were built in Egypt.',
+                    color: 'nature'
+                },
+                {
+                    id: 'penguins',
+                    emoji: '🐧',
+                    category: 'Animals',
+                    title: 'Penguins Propose with Pebbles!',
+                    text: 'When a male penguin wants to marry a female penguin, he searches for the smoothest, prettiest pebble he can find and gives it to her as a gift. If she likes it, she accepts and they become a couple! Penguins keep their eggs warm by balancing them on their feet and covering them with their tummy feathers.',
+                    extra: 'Penguins can drink salt water! They have a special gland that filters out the salt so they can drink ocean water.',
+                    color: 'animals'
+                },
+                {
+                    id: 'diamonds',
+                    emoji: '💎',
+                    category: 'Earth',
+                    title: 'Diamonds are Made of the Same Stuff as Pencils!',
+                    text: 'Diamonds and the lead in pencils are both made of carbon, just arranged differently! Diamonds form deep underground where it is super hot and squished for billions of years. They are the hardest natural material on Earth. The biggest diamond ever found was as big as a tennis ball!',
+                    extra: 'Scientists think there might be diamonds raining on Jupiter and Saturn! The pressure is so high that carbon turns into diamonds.',
+                    color: 'science'
+                },
+                {
+                    id: 'octopus',
+                    emoji: '🐙',
+                    category: 'Ocean',
+                    title: 'Octopuses Have Three Hearts!',
+                    text: 'Octopuses are amazing creatures with three hearts! Two hearts pump blood to their gills, and one pumps it to the rest of their body. They also have blue blood and eight arms with suckers. If an octopus loses an arm, it can grow a new one! They are very smart and can solve puzzles.',
+                    extra: 'Octopuses can change color in less than a second to hide from danger or talk to other octopuses!',
+                    color: 'ocean'
+                },
+                {
+                    id: 'thunder',
+                    emoji: '⛈️',
+                    category: 'Weather',
+                    title: 'Thunder is the Sound of Lightning!',
+                    text: 'Lightning is super hot - five times hotter than the surface of the Sun! When lightning strikes, it heats the air around it so fast that the air explodes. That explosion makes the sound we call thunder. Light travels faster than sound, so we see lightning before we hear thunder.',
+                    extra: 'You can tell how far away lightning is! Count the seconds between the flash and the thunder. Every 5 seconds means it is 1 mile away.',
+                    color: 'nature'
+                },
+                {
+                    id: 'chocolate',
+                    emoji: '🍫',
+                    category: 'Food',
+                    title: 'Chocolate Comes from Trees!',
+                    text: 'Chocolate is made from beans that grow on cacao trees. These trees grow in warm, rainy places near the equator. The beans are inside big colorful pods that grow right on the trunk of the tree! It takes about 400 cacao beans to make one pound of chocolate.',
+                    extra: 'The ancient Aztecs used cacao beans as money! They thought chocolate was a gift from their gods.',
+                    color: 'nature'
+                },
+                {
+                    id: 'echo',
+                    emoji: '🗣️',
+                    category: 'Sound',
+                    title: 'Echoes are Sound Bouncing!',
+                    text: 'An echo happens when sound waves hit a hard surface and bounce back to your ears. In a big empty room or a canyon, you can hear your voice come back to you! Bats use echoes to fly in the dark. They make sounds and listen for the echoes to know where walls and bugs are.',
+                    extra: 'The word "echo" comes from a Greek story about a mountain nymph who could only repeat the last words others said!',
+                    color: 'science'
+                },
+                {
+                    id: 'icecream',
+                    emoji: '🍦',
+                    category: 'Food',
+                    title: 'Ice Cream Was Once Only for Kings!',
+                    text: 'Long ago, ice cream was so hard to make that only rich kings and queens could eat it! They had to send people to mountains to bring back ice and snow. Now we have freezers to keep ice cream cold. The most popular ice cream flavor in the world is vanilla!',
+                    extra: 'It takes about 50 licks to finish one scoop of ice cream. How many licks does it take you?',
+                    color: 'nature'
+                },
+                {
+                    id: 'magnets',
+                    emoji: '🧲',
+                    category: 'Science',
+                    title: 'Magnets Have Invisible Forces!',
+                    text: 'Magnets can pull some metals toward them without even touching them! This is called magnetism. Every magnet has two ends called poles: north and south. Opposite poles attract (pull together), and same poles repel (push apart). Earth is like a giant magnet with a north and south pole!',
+                    extra: 'Some animals like sea turtles and salmon can sense Earth\'s magnetic field to help them find their way home!',
+                    color: 'science'
+                },
+                {
+                    id: 'kangaroo',
+                    emoji: '🦘',
+                    category: 'Animals',
+                    title: 'Kangaroos Can\'t Walk Backwards!',
+                    text: 'Kangaroos have big strong legs and a thick tail that help them hop really fast - up to 40 miles per hour! But because of their special body shape, they cannot walk backwards. Female kangaroos have a pouch on their tummy where their babies live and drink milk.',
+                    extra: 'Baby kangaroos are called joeys. When they are born, they are as small as a jellybean and crawl into mom\'s pouch!',
+                    color: 'animals'
+                },
+                {
+                    id: 'rain',
+                    emoji: '🌧️',
+                    category: 'Weather',
+                    title: 'Rain Smells Special!',
+                    text: 'Have you ever noticed a nice smell when rain starts falling? That smell is called "petrichor"! It happens when raindrops hit dry soil and release oils from plants. Rain is actually very clean when it forms in clouds, but it collects dust as it falls through the air.',
+                    extra: 'The biggest raindrop ever recorded was as big as a quarter! But raindrops usually break apart when they get too big.',
+                    color: 'nature'
+                }
+            ],
+            animals: [
+                {
+                    id: 'whale',
+                    emoji: '🐋',
+                    category: 'Ocean Animals',
+                    title: 'Blue Whales Have Huge Hearts!',
+                    text: 'Blue whales are the biggest animals that have ever lived on Earth - even bigger than dinosaurs! Their heart is as big as a small car and weighs about 1,300 pounds. A person could actually swim through a blue whale\'s arteries! Despite being so big, blue whales eat tiny shrimp called krill.',
+                    extra: 'A blue whale\'s tongue alone weighs as much as an elephant! And their calls are the loudest sounds made by any animal.',
+                    color: 'animals'
+                },
+                {
+                    id: 'koala',
+                    emoji: '🐨',
+                    category: 'Marsupials',
+                    title: 'Koalas Have Fingerprints Like Humans!',
+                    text: 'Koalas have something very special - fingerprints that look almost exactly like human fingerprints! If you looked at a koala fingerprint and a human fingerprint under a microscope, even scientists would have trouble telling them apart. This is very unusual because most animals do not have fingerprints like we do.',
+                    extra: 'Koalas sleep up to 20 hours a day because the eucalyptus leaves they eat take a lot of energy to digest!',
+                    color: 'animals'
+                },
+                {
+                    id: 'seahorse',
+                    emoji: '🦈',
+                    category: 'Ocean',
+                    title: 'Daddy Seahorses Have Babies!',
+                    text: 'Seahorses are very special because the daddy seahorse carries the babies! The mommy puts her eggs in a special pouch on the daddy\'s tummy. The daddy carries them for about 45 days until they hatch. When it is time, hundreds of tiny baby seahorses come out of the daddy\'s pouch!',
+                    extra: 'Seahorses hold tails with their partner when they swim so they don\'t lose each other in the ocean currents. How sweet!',
+                    color: 'ocean'
+                },
+                {
+                    id: 'flamingo',
+                    emoji: '🦩',
+                    category: 'Birds',
+                    title: 'A Group of Flamingos is Called a "Flamboyance"',
+                    text: 'When flamingos get together in a group, it is called a "flamboyance" - that means bright and showy! This is a perfect name for these pink birds. Flamingos are pink because of the food they eat - shrimp and algae that have special colors. Baby flamingos are actually born gray and turn pink as they grow up!',
+                    extra: 'Flamingos can sleep standing on one leg! They have special balance that helps them rest while staying safe.',
+                    color: 'animals'
+                },
+                {
+                    id: 'cow',
+                    emoji: '🐄',
+                    category: 'Farm Animals',
+                    title: 'Cows Have Best Friends!',
+                    text: 'Cows are very social animals and form strong friendships. Scientists have found that cows have best friends and get stressed when they are separated from them. Cows like to hang out with their friends and will often choose to stand next to them in the field. They even groom each other as a sign of friendship!',
+                    extra: 'Cows have excellent memories and can remember their friends and family members for many years!',
+                    color: 'animals'
+                },
+                {
+                    id: 'polar',
+                    emoji: '🐻‍❄️',
+                    category: 'Arctic',
+                    title: 'Polar Bears Have Black Skin!',
+                    text: 'Polar bears look white, but under their thick fur, they actually have black skin! The black skin helps them soak up the warm sunlight in the cold Arctic. Their fur is not actually white either - it is clear and hollow, which helps keep them warm and makes them look white in the snow.',
+                    extra: 'Polar bears are such good swimmers that they are classified as marine mammals, just like whales and seals!',
+                    color: 'animals'
+                },
+                {
+                    id: 'elephant',
+                    emoji: '🐘',
+                    category: 'African Animals',
+                    title: 'Elephants Can\'t Jump!',
+                    text: 'Elephants are the only mammals that cannot jump! They are too heavy and their legs are not built for jumping. But they are excellent swimmers and can use their trunks like snorkels. An elephant\'s trunk has over 40,000 muscles and can pick up something as small as a peanut or as big as a tree branch!',
+                    extra: 'Elephants can "hear" with their feet! They pick up vibrations from the ground through their sensitive foot pads.',
+                    color: 'animals'
+                },
+                {
+                    id: 'giraffe',
+                    emoji: '🦒',
+                    category: 'African Animals',
+                    title: 'Giraffes Have Purple Tongues!',
+                    text: 'Giraffes have very long tongues - up to 20 inches long! Their tongues are purple or blue-black in color. Scientists think this dark color protects their tongues from getting sunburned when they eat leaves from tall trees. A giraffe\'s neck is too short to reach the ground, so they have to spread their legs to drink water!',
+                    extra: 'Baby giraffes are born by falling about 6 feet to the ground! But they are tough and can stand up within an hour of being born.',
+                    color: 'animals'
+                },
+                {
+                    id: 'turtle',
+                    emoji: '🐢',
+                    category: 'Reptiles',
+                    title: 'Turtles Can Breathe Through Their Bottoms!',
+                    text: 'Some turtles, especially those that hibernate underwater, can breathe through their bottoms! This is called "cloacal respiration." It helps them get oxygen when they are buried in mud at the bottom of ponds during winter. Turtles have been around for over 200 million years - since the time of dinosaurs!',
+                    extra: 'The oldest turtle ever lived to be 188 years old! Her name was Tu\'i Malila and she was given to the royal family of Tonga in 1777.',
+                    color: 'animals'
+                },
+                {
+                    id: 'owl',
+                    emoji: '🦉',
+                    category: 'Birds',
+                    title: 'Owls Can Turn Their Heads Almost All the Way Around!',
+                    text: 'Owls can turn their heads up to 270 degrees - that is almost a full circle! They need to do this because their eyes are fixed in their sockets and cannot move. Owls have excellent hearing and can hear a mouse stepping on a twig from far away. Their flat faces work like satellite dishes to catch sounds!',
+                    extra: 'A group of owls is called a "parliament" - just like the government building! This comes from an old story by C.S. Lewis.',
+                    color: 'animals'
+                },
+                {
+                    id: 'dolphin',
+                    emoji: '🐬',
+                    category: 'Ocean',
+                    title: 'Dolphins Have Names!',
+                    text: 'Dolphins use special whistles to call each other, and each dolphin has its own unique whistle - like a name! They recognize their friends and family members by their special sounds. Dolphins are very smart and work together to catch fish. They take turns eating and guarding against sharks.',
+                    extra: 'Dolphins sleep with one eye open! They rest one half of their brain at a time so they can keep swimming and breathing.',
+                    color: 'ocean'
+                },
+                {
+                    id: 'peacock',
+                    emoji: '🦚',
+                    category: 'Birds',
+                    title: 'Only Boy Peacocks Have Colorful Tails!',
+                    text: 'The beautiful peacocks with big colorful tails are actually the boys! They spread their feathers to impress the girl peacocks (called peahens). The bigger and more colorful the tail, the more the girls like them. The tail feathers have special "eyes" that shimmer in the light.',
+                    extra: 'A peacock\'s tail can have over 200 feathers and can be 6 feet long - longer than the peacock\'s whole body!',
+                    color: 'animals'
+                },
+                {
+                    id: 'bat',
+                    emoji: '🦇',
+                    category: 'Mammals',
+                    title: 'Bats are the Only Flying Mammals!',
+                    text: 'Bats are the only mammals that can truly fly! Other animals like flying squirrels just glide. Bats have special wings made of skin stretched over their fingers. There are over 1,400 types of bats in the world! Most bats eat insects, but some drink fruit juice or nectar from flowers.',
+                    extra: 'Bats are very helpful! One bat can eat 1,000 mosquitoes in an hour. They help keep bug populations under control.',
+                    color: 'animals'
+                },
+                {
+                    id: 'snail',
+                    emoji: '🐌',
+                    category: 'Mollusks',
+                    title: 'Snails Can Sleep for Three Years!',
+                    text: 'When the weather gets too dry or cold, snails can sleep for a very long time - up to three years! They seal themselves inside their shells with a special slimy door called an epiphragm. This keeps them moist and safe until the weather gets better. Snails move very slowly using a muscular foot that glides on slime.',
+                    extra: 'The biggest snail in the world can grow to be 12 inches long - that is as big as a ruler!',
+                    color: 'animals'
+                },
+                {
+                    id: 'cheetah',
+                    emoji: '🐆',
+                    category: 'African Animals',
+                    title: 'Cheetahs are the Fastest Land Animals!',
+                    text: 'Cheetahs can run up to 70 miles per hour - as fast as cars on a highway! But they can only run that fast for a short time. Their bodies are built for speed with long legs, a flexible spine, and a long tail for balance. Cheetahs have "tear marks" on their faces that help block the sun like the black marks athletes wear.',
+                    extra: 'Cheetahs cannot roar like lions and tigers. Instead, they purr, chirp, and even make a sound like a bird!',
+                    color: 'animals'
+                },
+                {
+                    id: 'hedgehog',
+                    emoji: '🦔',
+                    category: 'Mammals',
+                    title: 'Hedgehogs Have 5,000 Spikes!',
+                    text: 'Hedgehogs are covered in about 5,000 sharp spines called quills! When they feel scared, they roll into a tight ball so their spines protect them. Baby hedgehogs are born with soft spines that harden after a few hours. Hedgehogs are nocturnal, which means they sleep during the day and hunt for bugs at night.',
+                    extra: 'Hedgehogs are immune to snake venom! They can eat poisonous snakes without getting sick.',
+                    color: 'animals'
+                },
+                {
+                    id: 'panda',
+                    emoji: '🐼',
+                    category: 'Bears',
+                    title: 'Pandas Eat for 12 Hours a Day!',
+                    text: 'Giant pandas love to eat bamboo - they spend 10 to 16 hours every day eating it! They have to eat so much because bamboo does not give them much energy. A panda can eat 26 to 84 pounds of bamboo every day. Even though they are classified as carnivores (meat-eaters), 99% of their diet is bamboo!',
+                    extra: 'Newborn pandas are very tiny - about the size of a stick of butter! They are pink, hairless, and blind when born.',
+                    color: 'animals'
+                },
+                {
+                    id: 'chameleon',
+                    emoji: '🦎',
+                    category: 'Reptiles',
+                    title: 'Chameleons Can Move Their Eyes in Two Directions!',
+                    text: 'Chameleons have amazing eyes! Each eye can move independently, so they can look in two different directions at the same time. This helps them spot bugs to eat while also watching for danger. Their tongues are twice as long as their bodies and shoot out super fast to catch insects!',
+                    extra: 'Chameleons don\'t change color just to hide - they also change colors to show their feelings, like when they are happy, scared, or angry!',
+                    color: 'animals'
+                },
+                {
+                    id: 'platypus',
+                    emoji: '🦫',
+                    category: 'Mammals',
+                    title: 'Platypuses are Mix of Many Animals!',
+                    text: 'Platypuses are very strange animals! They have a duck\'s bill, a beaver\'s tail, and otter\'s feet. They lay eggs like birds but feed their babies milk like mammals. Male platypuses have venomous spurs on their heels! They are one of only two mammals that lay eggs (the other is the echidna).',
+                    extra: 'Platypuses don\'t have stomachs! Their esophagus connects directly to their intestines.',
+                    color: 'animals'
+                },
+                {
+                    id: 'starfish',
+                    emoji: '⭐',
+                    category: 'Ocean',
+                    title: 'Starfish Can Grow New Arms!',
+                    text: 'If a starfish loses an arm, it can grow a new one! Some types can even grow a whole new body from just one arm. Starfish are not actually fish - they are echinoderms, related to sea urchins. They have no brain and no blood! They use seawater to pump nutrients through their bodies.',
+                    extra: 'Starfish have eyes at the end of each arm! They can see light and dark, which helps them find their way around.',
+                    color: 'ocean'
+                },
+                {
+                    id: 'camel',
+                    emoji: '🐪',
+                    category: 'Desert Animals',
+                    title: 'Camels Store Fat, Not Water!',
+                    text: 'Contrary to popular belief, camels do not store water in their humps! Their humps are full of fat, which gives them energy when food is scarce. Camels can drink up to 40 gallons of water at once. They are perfectly adapted to desert life with special eyelids, closable nostrils, and wide feet that don\'t sink in sand.',
+                    extra: 'Camels have three eyelids! Two of them have lashes to keep sand out, and a third one is clear like goggles.',
+                    color: 'animals'
+                }
+            ],
+            space: [
+                {
+                    id: 'saturn',
+                    emoji: '🪐',
+                    category: 'Planets',
+                    title: 'Saturn Could Float in Water!',
+                    text: 'Saturn is a gas giant made mostly of hydrogen and helium. It is so light for its size that if you could find a bathtub big enough, Saturn would float in water! Saturn is famous for its beautiful rings made of ice and rock. Some of the pieces in the rings are as small as grains of sand, while others are as big as houses!',
+                    extra: 'Saturn has at least 146 moons! Its biggest moon, Titan, has lakes made of liquid methane and ethane.',
+                    color: 'space'
+                },
+                {
+                    id: 'stars',
+                    emoji: '⭐',
+                    category: 'Stars',
+                    title: 'More Stars Than Sand!',
+                    text: 'There are more stars in the universe than all the grains of sand on all the beaches on Earth! Scientists think there are about 10 billion galaxies, and each galaxy has about 100 billion stars. That is a number so big it is hard to imagine! Many of these stars have planets around them, just like our Sun has Earth.',
+                    extra: 'When you look at stars, you are looking back in time! The light from stars takes years to reach us, so you see them as they were long ago.',
+                    color: 'space'
+                },
+                {
+                    id: 'jupiter',
+                    emoji: '🌌',
+                    category: 'Planets',
+                    title: 'Jupiter Has Short Days!',
+                    text: 'Jupiter is the fastest spinning planet in our solar system. One day on Jupiter is only about 10 hours long! That means if you lived on Jupiter, you would have a sunrise and sunset every 5 hours. Jupiter is also the biggest planet - over 1,300 Earths could fit inside it!',
+                    extra: 'Jupiter has a Great Red Spot that is a huge storm that has been raging for hundreds of years. It is bigger than Earth!',
+                    color: 'space'
+                },
+                {
+                    id: 'iss',
+                    emoji: '🛰️',
+                    category: 'Space Station',
+                    title: 'Astronauts See 16 Sunrises Daily!',
+                    text: 'The International Space Station (ISS) orbits Earth every 90 minutes. That means the astronauts living there see 16 sunrises and 16 sunsets every single day! The space station travels at 5 miles per second. Astronauts do science experiments there and learn how living in space affects the human body.',
+                    extra: 'Astronauts grow a little taller in space because there is no gravity to squish their spines! They return to normal height when they come back to Earth.',
+                    color: 'space'
+                },
+                {
+                    id: 'venus',
+                    emoji: '🌅',
+                    category: 'Planets',
+                    title: 'Venus Spins Backwards!',
+                    text: 'Venus is special because it spins in the opposite direction of all the other planets! This means the Sun rises in the west and sets in the east on Venus. Venus is also the hottest planet in our solar system, even hotter than Mercury, because it has thick clouds that trap heat.',
+                    extra: 'A day on Venus is longer than a year on Venus! It spins very slowly, taking 243 Earth days to spin around once.',
+                    color: 'space'
+                },
+                {
+                    id: 'moonfoot',
+                    emoji: '👣',
+                    category: 'The Moon',
+                    title: 'Footprints Last Forever on the Moon',
+                    text: 'When astronauts walked on the Moon in 1969, they left footprints in the dust. Those footprints are still there today! This is because the Moon has no wind or rain to wash them away. There is no atmosphere on the Moon to protect it, so the footprints will stay there for millions of years unless a meteorite hits them.',
+                    extra: 'The Moon dust is so sharp and jagged that it stuck to everything and was hard to brush off the astronauts\' suits!',
+                    color: 'space'
+                },
+                {
+                    id: 'mars',
+                    emoji: '🔴',
+                    category: 'Planets',
+                    title: 'Mars is Home to the Biggest Volcano!',
+                    text: 'Mars has the biggest volcano in our solar system called Olympus Mons. It is three times taller than Mount Everest! Mars is called the Red Planet because its soil is full of iron oxide, which is like rust. Scientists are studying Mars to see if humans could live there one day.',
+                    extra: 'Mars has the biggest canyon too! Valles Marineris is 4 times deeper than the Grand Canyon and would stretch across the entire USA.',
+                    color: 'space'
+                },
+                {
+                    id: 'neptune',
+                    emoji: '🔵',
+                    category: 'Planets',
+                    title: 'Neptune Has the Fastest Winds!',
+                    text: 'Neptune is the windiest planet in our solar system. Winds there can blow up to 1,300 miles per hour - faster than the speed of sound! Neptune is an ice giant made of water, ammonia, and methane. It is so far from the Sun that one year on Neptune lasts 165 Earth years!',
+                    extra: 'Neptune was the first planet found by math! Scientists calculated where it should be before they actually saw it through a telescope.',
+                    color: 'space'
+                },
+                {
+                    id: 'milkyway',
+                    emoji: '🌠',
+                    category: 'Galaxy',
+                    title: 'We Live in the Milky Way!',
+                    text: 'Our solar system is part of a huge galaxy called the Milky Way. It is shaped like a giant spinning disk with spiral arms. It takes light 100,000 years to travel from one side to the other! Our Sun is just one of 100 to 400 billion stars in the Milky Way. On dark nights, you can see a band of light across the sky - that is the Milky Way!',
+                    extra: 'The Milky Way is going to collide with another galaxy called Andromeda in about 4 billion years, but it will be a slow, gentle crash!',
+                    color: 'space'
+                },
+                {
+                    id: 'blackhole',
+                    emoji: '⚫',
+                    category: 'Space Phenomena',
+                    title: 'Black Holes are Cosmic Vacuums!',
+                    text: 'Black holes are areas in space where gravity is so strong that nothing can escape - not even light! They form when very big stars collapse. If you got too close to a black hole, you would get stretched out like spaghetti! But don\'t worry - the nearest black hole is thousands of light-years away.',
+                    extra: 'Time slows down near black holes! If you watched someone fall into a black hole, they would appear to move slower and slower.',
+                    color: 'space'
+                },
+                {
+                    id: 'comet',
+                    emoji: '☄️',
+                    category: 'Space Objects',
+                    title: 'Comets are Dirty Snowballs!',
+                    text: 'Comets are made of ice, dust, and rock - like dirty snowballs flying through space! When they get close to the Sun, the ice melts and creates a beautiful glowing tail that can be millions of miles long. Halley\'s Comet visits Earth every 76 years. The last time was in 1986, so it will return in 2061!',
+                    extra: 'Some scientists think that comets brought water to Earth when our planet was young! We might have comets to thank for our oceans.',
+                    color: 'space'
+                },
+                {
+                    id: 'aurora',
+                    emoji: '🌌',
+                    category: 'Earth Phenomena',
+                    title: 'Northern Lights are Space Weather!',
+                    text: 'The Northern Lights (Aurora Borealis) happen when particles from the Sun hit Earth\'s atmosphere near the poles. They create beautiful dancing lights in green, pink, and purple colors. You can see them in places like Alaska, Canada, and Norway. There are also Southern Lights near the South Pole!',
+                    extra: 'Other planets have auroras too! Jupiter and Saturn have amazing light shows that are even bigger than Earth\'s.',
+                    color: 'space'
+                },
+                {
+                    id: 'rocket',
+                    emoji: '🚀',
+                    category: 'Space Travel',
+                    title: 'Rockets Need to Go Super Fast!',
+                    text: 'To get to space, rockets need to travel at 17,500 miles per hour! That is called "escape velocity" - the speed needed to break free from Earth\'s gravity. Rockets work by pushing hot air out the back, which makes them go up. This is called Newton\'s Third Law: for every action, there is an equal and opposite reaction.',
+                    extra: 'The Saturn V rocket that took astronauts to the Moon was as tall as a 36-story building and weighed 6.2 million pounds!',
+                    color: 'space'
+                },
+                {
+                    id: 'telescope',
+                    emoji: '🔭',
+                    category: 'Astronomy',
+                    title: 'Telescopes are Time Machines!',
+                    text: 'When we look through telescopes at distant stars and galaxies, we are looking back in time! Light takes time to travel, so when we see a star that is 100 light-years away, we see it as it was 100 years ago. The Hubble Space Telescope has shown us galaxies that formed over 13 billion years ago!',
+                    extra: 'The James Webb Space Telescope can see infrared light, which means it can see through dust clouds to find baby stars being born!',
+                    color: 'space'
+                },
+                {
+                    id: 'solarflare',
+                    emoji: '💥',
+                    category: 'Sun',
+                    title: 'The Sun Has Explosive Temper!',
+                    text: 'Sometimes the Sun has big explosions called solar flares! These send out huge amounts of energy and particles into space. When they reach Earth, they can cause beautiful auroras but can also disrupt satellites and radios. The Sun goes through cycles of being more or less active every 11 years.',
+                    extra: 'Solar flares can be as powerful as millions of nuclear bombs exploding at once, but Earth is protected by its magnetic field and atmosphere.',
+                    color: 'space'
+                },
+                {
+                    id: 'exoplanet',
+                    emoji: '🌍',
+                    category: 'Planets',
+                    title: 'Planets Around Other Stars!',
+                    text: 'Scientists have discovered over 5,000 planets orbiting other stars - we call them exoplanets! Some of these planets might have conditions right for life. The TRAPPIST-1 system has seven Earth-sized planets, and some might have water! We find these planets by watching stars to see if they dim when a planet passes in front.',
+                    extra: 'There is a planet made mostly of diamond called 55 Cancri e! It is twice the size of Earth and very, very valuable.',
+                    color: 'space'
+                },
+                {
+                    id: 'spacedust',
+                    emoji: '✨',
+                    category: 'Space Matter',
+                    title: 'You are Made of Stardust!',
+                    text: 'The atoms in your body were made inside stars! When stars die, they explode and spread elements like carbon, oxygen, and iron across space. This "stardust" eventually forms new stars, planets, and even people! So when you look up at the night sky, remember - you are part of the universe, and the universe is part of you.',
+                    extra: 'Every atom of gold on Earth was made in the explosion of a star or collision of neutron stars billions of years ago!',
+                    color: 'space'
+                },
+                {
+                    id: 'zerog',
+                    emoji: '🤸',
+                    category: 'Space Life',
+                    title: 'Astronauts Float in Zero Gravity!',
+                    text: 'In space, there is no gravity pulling things down, so astronauts float! This is called "microgravity" or "zero G." Astronauts have to strap themselves to beds to sleep, and they use Velcro to keep their food from floating away. Water forms floating balls that they have to catch to drink!',
+                    extra: 'Astronauts have to exercise two hours every day in space, or their muscles and bones get weak from not fighting gravity!',
+                    color: 'space'
+                },
+                {
+                    id: 'spacesuit',
+                    emoji: '👨‍🚀',
+                    category: 'Space Gear',
+                    title: 'Spacesuits are Personal Spaceships!',
+                    text: 'A spacesuit is like a tiny personal spaceship! It provides oxygen to breathe, water to drink, and protection from extreme temperatures. A spacesuit costs about $12 million and weighs about 280 pounds on Earth (though it is weightless in space). It has 14 layers to protect astronauts from micrometeoroids and radiation.',
+                    extra: 'Astronauts wear a diaper called a Maximum Absorbency Garment during spacewalks because they cannot take the suit off for 7 hours!',
+                    color: 'space'
+                },
+                {
+                    id: 'bigbang',
+                    emoji: '💫',
+                    category: 'Universe',
+                    title: 'The Universe Started with a Big Bang!',
+                    text: 'Scientists believe the universe began about 13.8 billion years ago with the Big Bang - a huge expansion from a tiny, hot point. It wasn\'t an explosion in space, but an expansion of space itself! The universe is still expanding today, and galaxies are moving farther apart. We can see echoes of the Big Bang with special telescopes.',
+                    extra: 'For the first 380,000 years after the Big Bang, the universe was completely dark because light could not travel through the hot, dense matter!',
+                    color: 'space'
+                }
+            ],
+            science: [
+                {
+                    id: 'honey',
+                    emoji: '🍯',
+                    category: 'Food Science',
+                    title: 'Honey Never Goes Bad!',
+                    text: 'Honey is one of the only foods that never spoils! Archaeologists found pots of honey in ancient Egyptian tombs that are over 3,000 years old - and it was still perfectly good to eat. Honey has natural preservatives and very little water, so bacteria cannot grow in it. Bees are amazing chemists!',
+                    extra: 'To make one jar of honey, bees fly a distance equal to going around the world three times!',
+                    color: 'science'
+                },
+                {
+                    id: 'body',
+                    emoji: '🦴',
+                    category: 'Human Body',
+                    title: 'Your Brain is 75% Water!',
+                    text: 'Your brain is about 75% water, which is why it is important to drink water to stay smart and healthy! Your heart beats about 115,000 times every day, pumping blood all around your body. If you stretched out all your blood vessels, they would go around the Earth more than twice!',
+                    extra: 'You are taller in the morning than at night! During the day, gravity squishes your spine a little bit, making you slightly shorter by bedtime.',
+                    color: 'science'
+                },
+                {
+                    id: 'banana',
+                    emoji: '🍌',
+                    category: 'Plants',
+                    title: 'Bananas Are Berries, But Strawberries Aren\'t!',
+                    text: 'In science, fruits are classified in funny ways. Bananas are actually berries because they grow from a flower with one ovary and have seeds inside (the tiny black dots). But strawberries are not berries because their seeds are on the outside! Watermelons and pumpkins are also berries in science.',
+                    extra: 'Bananas are slightly radioactive, but don\'t worry - you would need to eat 10 million bananas at once to get sick!',
+                    color: 'science'
+                },
+                {
+                    id: 'eiffel',
+                    emoji: '🗼',
+                    category: 'Engineering',
+                    title: 'The Eiffel Tower Grows in Summer!',
+                    text: 'The Eiffel Tower in Paris is made of iron. When it gets hot in the summer, the iron expands (gets bigger) and the tower grows up to 15 centimeters (6 inches) taller! When winter comes and it gets cold, the tower shrinks back down. Engineers planned for this when they built it.',
+                    extra: 'The Eiffel Tower was supposed to be taken down after 20 years, but they kept it because it was useful for radio signals!',
+                    color: 'science'
+                },
+                {
+                    id: 'clouds',
+                    emoji: '☁️',
+                    category: 'Weather',
+                    title: 'Clouds Weigh Millions of Pounds!',
+                    text: 'Even though they float gently in the sky, clouds are actually very heavy! A typical fluffy white cloud can weigh more than one million pounds - that is as heavy as 100 elephants! They float because the air holds them up, and the water droplets are spread out over a large area.',
+                    extra: 'Clouds look white because they reflect sunlight. When they get full of water and turn gray, we call them storm clouds!',
+                    color: 'science'
+                },
+                {
+                    id: 'snow',
+                    emoji: '❄️',
+                    category: 'Weather',
+                    title: 'The Biggest Snowflake Ever!',
+                    text: 'The largest snowflake ever recorded was 15 inches wide and 8 inches thick - that is as big as a dinner plate! It fell in Montana, USA in 1887. Snowflakes form when water vapor freezes in the air. Each snowflake is unique, like a fingerprint, because it forms differently based on temperature and humidity.',
+                    extra: 'Snow is not actually white - it is clear ice crystals that reflect all colors of light, making it look white to our eyes!',
+                    color: 'science'
+                },
+                {
+                    id: 'germs',
+                    emoji: '🦠',
+                    category: 'Biology',
+                    title: 'Not All Germs Are Bad!',
+                    text: 'Your body is home to trillions of tiny living things called bacteria! Most of them are helpful and live in your gut to help you digest food. In fact, you have more bacteria cells in your body than human cells! Washing your hands helps get rid of the bad germs that can make you sick while keeping the good ones.',
+                    extra: 'The study of germs helped create vaccines! Vaccines teach your body how to fight diseases without getting sick first.',
+                    color: 'science'
+                },
+                {
+                    id: 'lightning',
+                    emoji: '⚡',
+                    category: 'Weather',
+                    title: 'Lightning is Hotter Than the Sun!',
+                    text: 'A lightning bolt can be five times hotter than the surface of the Sun! It can reach temperatures of 50,000 degrees Fahrenheit. Lightning happens when positive and negative charges build up in clouds and need to balance out. A bolt of lightning is actually hotter than the surface of the sun!',
+                    extra: 'Lightning strikes Earth about 100 times every second! That is over 8 million strikes per day.',
+                    color: 'science'
+                },
+                {
+                    id: 'bones',
+                    emoji: '🦴',
+                    category: 'Human Body',
+                    title: 'You Have 206 Bones!',
+                    text: 'Adult humans have 206 bones in their body, but babies are born with about 270! As babies grow, some of their bones fuse together. The smallest bone is in your ear and is called the stapes - it is smaller than a grain of rice! The biggest bone is your thigh bone, called the femur.',
+                    extra: 'Your bones are stronger than steel! Ounce for ounce, bone is stronger than steel and concrete.',
+                    color: 'science'
+                },
+                {
+                    id: 'rainbow2',
+                    emoji: '🌈',
+                    category: 'Light',
+                    title: 'Rainbows are Full Circles!',
+                    text: 'Rainbows are actually full circles, but we usually only see half of them because the ground blocks the bottom! Pilots sometimes see full-circle rainbows from airplanes. Rainbows form when sunlight bends through water droplets in the air, splitting white light into seven colors.',
+                    extra: 'You can never reach the end of a rainbow! As you move, the rainbow moves too, so it always stays the same distance away.',
+                    color: 'science'
+                },
+                {
+                    id: 'saliva',
+                    emoji: '💧',
+                    category: 'Human Body',
+                    title: 'You Make Lots of Spit!',
+                    text: 'Your mouth makes about 1 to 2 liters of saliva (spit) every day! Over your lifetime, that is enough to fill two swimming pools. Saliva helps you taste food, swallow, and keeps your mouth healthy. It contains enzymes that start breaking down food before it even reaches your stomach!',
+                    extra: 'Your spit can help heal wounds! It has special proteins that can kill germs and help skin grow back faster.',
+                    color: 'science'
+                },
+                {
+                    id: 'metal',
+                    emoji: '🔧',
+                    category: 'Materials',
+                    title: 'Mercury is a Liquid Metal!',
+                    text: 'Mercury is the only metal that is liquid at room temperature! It looks like shiny silver water. It is used in old thermometers, but we have to be careful because it is poisonous. Gallium is another metal that melts in your hand - it turns liquid at 85 degrees Fahrenheit!',
+                    extra: 'If you put metal in the microwave, it can start a fire! Metal reflects microwaves instead of absorbing them.',
+                    color: 'science'
+                },
+                {
+                    id: 'gravity',
+                    emoji: '🍎',
+                    category: 'Physics',
+                    title: 'Gravity Keeps Us Grounded!',
+                    text: 'Gravity is the force that pulls things toward each other. Earth\'s gravity pulls us down so we don\'t float away! The more massive something is, the stronger its gravity. The Moon has less gravity than Earth, so you would weigh less there. Jupiter has more gravity, so you would weigh more!',
+                    extra: 'Isaac Newton discovered gravity when he saw an apple fall from a tree. He realized the same force that pulled the apple down also keeps the Moon orbiting Earth!',
+                    color: 'science'
+                },
+                {
+                    id: 'fire',
+                    emoji: '🔥',
+                    category: 'Chemistry',
+                    title: 'Fire Needs Three Things!',
+                    text: 'Fire needs three things to burn: heat, fuel (something to burn), and oxygen (air). This is called the "fire triangle." If you remove any one of these, the fire goes out. That is why covering a fire with a blanket puts it out - it removes the oxygen! Water puts out fires by cooling them down.',
+                    extra: 'Fire doesn\'t have a shadow! Fire produces light, so it cannot block light to make a shadow.',
+                    color: 'science'
+                },
+                {
+                    id: 'static',
+                    emoji: '⚡',
+                    category: 'Electricity',
+                    title: 'Static Electricity is Tiny Lightning!',
+                    text: 'When you rub a balloon on your hair and it sticks, or when you get a shock touching a doorknob, that is static electricity! It happens when electrons (tiny negative particles) move from one object to another. Lightning is just a giant version of the static shock you feel!',
+                    extra: 'You can make water bend with static electricity! Rub a comb on your hair, then hold it near a thin stream of water - the water will bend toward the comb!',
+                    color: 'science'
+                },
+                {
+                    id: 'crystals',
+                    emoji: '💎',
+                    category: 'Geology',
+                    title: 'Crystals Grow Like Plants!',
+                    text: 'Crystals form when liquids cool and harden, or when water evaporates and leaves minerals behind. They grow in specific geometric shapes based on their atomic structure. Salt and sugar are both crystals! The biggest crystals ever found are in a cave in Mexico - some are 36 feet long!',
+                    extra: 'Snowflakes are ice crystals! Each one forms a six-sided shape because of how water molecules arrange themselves when freezing.',
+                    color: 'science'
+                },
+                {
+                    id: 'mirror',
+                    emoji: '🪞',
+                    category: 'Light',
+                    title: 'Mirrors Flip Front to Back!',
+                    text: 'Mirrors don\'t actually flip things left to right - they flip them front to back! When you raise your right hand, your reflection raises the hand on the right side of the mirror. It only looks flipped because you are used to seeing people turn around to face you, which does switch left and right.',
+                    extra: 'Two mirrors facing each other create infinite reflections! The reflections get smaller and smaller into the distance.',
+                    color: 'science'
+                },
+                {
+                    id: 'sugar',
+                    emoji: '🍬',
+                    category: 'Chemistry',
+                    title: 'Sugar is a Crystal Too!',
+                    text: 'Sugar is actually a crystal! When you look at granulated sugar under a microscope, you can see that each grain is a tiny crystal with flat sides and sharp edges. Rock candy is made by growing sugar crystals on a string. The longer you leave it, the bigger the crystals grow!',
+                    extra: 'Sugar can become glass! If you heat sugar until it melts and then cool it quickly, it turns into a clear, glass-like candy called hard candy.',
+                    color: 'science'
+                },
+                {
+                    id: 'bubble',
+                    emoji: '🫧',
+                    category: 'Physics',
+                    title: 'Bubbles are Always Round!',
+                    text: 'Bubbles are always round because of something called "surface tension." Water molecules are attracted to each other and pull together, forming the smallest possible shape - a sphere! Even if you blow a bubble through a square wand, it will become round as it floats away.',
+                    extra: 'Bubbles pop when they touch dry things because the water gets absorbed. If you wet your hand, you can hold a bubble without popping it!',
+                    color: 'science'
+                },
+                {
+                    id: 'magnet2',
+                    emoji: '🧭',
+                    category: 'Physics',
+                    title: 'Earth is a Giant Magnet!',
+                    text: 'Earth acts like a giant magnet with a north and south pole! This is because of the hot, liquid iron in Earth\'s outer core. The magnetic field protects us from harmful radiation from space. Compasses work because their needles are magnets that align with Earth\'s magnetic field, pointing north.',
+                    extra: 'Earth\'s magnetic poles move! The north magnetic pole is slowly moving from Canada toward Russia at about 25 miles per year.',
+                    color: 'science'
+                }
+            ]
+        };
+
+        // Challenges for kids
+        const challenges = [
+            "Can you find something blue in your room and draw it? 🎨",
+            "Count how many windows are in your house! 🔢",
+            "Find three things that are soft and give them a hug! 🤗",
+            "Draw a picture of your favorite animal! 🦁",
+            "Help water a plant today! 🌱",
+            "Find something shaped like a circle in your kitchen! ⭕",
+            "Try to stand on one foot for 10 seconds! 🦶",
+            "Draw what you think an alien looks like! 👽",
+            "Find five things that are green outside! 🌿",
+            "Make up a song about your favorite food! 🎵",
+            "Look at the clouds and tell someone what shapes you see! ☁️",
+            "Try to find a bird outside and watch what it does! 🐦",
+            "Draw a map of your bedroom! 🗺️",
+            "Find something that starts with the letter 'B'! 🅱️",
+            "Give someone in your family a high-five! ✋",
+            "Find something that floats in water! 🛁",
+            "Count how many books you have in your room! 📚",
+            "Find something that makes a crunch sound! 🥕",
+            "Draw your favorite season (winter, spring, summer, fall)! 🍂",
+            "Find something that smells good! 👃"
+        ];
+
+        // Statistics tracking
+        let stats = {
+            totalRead: 0,
+            liked: 0,
+            disliked: 0,
+            categoryLikes: {
+                news: 0,
+                animals: 0,
+                space: 0,
+                science: 0
+            },
+            currentStreak: 1,
+            lastVisit: new Date().toDateString()
+        };
+
+        let currentArticleId = null;
+        let currentCategory = null;
+
+        // Initialize
+        function init() {
+            loadStats();
+            renderCards();
+            setDate();
+            checkStreak();
+            updateStatsDisplay();
+        }
+
+        // Load stats from localStorage
+        function loadStats() {
+            const saved = localStorage.getItem('explorerStats');
+            if (saved) {
+                stats = JSON.parse(saved);
+            }
+        }
+
+        // Save stats to localStorage
+        function saveStats() {
+            localStorage.setItem('explorerStats', JSON.stringify(stats));
+        }
+
+        // Check daily streak
+        function checkStreak() {
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+            
+            if (stats.lastVisit === yesterday) {
+                stats.currentStreak++;
+            } else if (stats.lastVisit !== today) {
+                stats.currentStreak = 1;
+            }
+            stats.lastVisit = today;
+            saveStats();
+        }
+
+        // Render all cards
+        function renderCards() {
+            renderCategory('news', 'newsGrid');
+            renderCategory('animals', 'animalsGrid');
+            renderCategory('space', 'spaceGrid');
+            renderCategory('science', 'scienceGrid');
+        }
+
+        // Render a specific category
+        function renderCategory(category, gridId) {
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
+            
+            articles[category].forEach(article => {
+                const card = document.createElement('article');
+                card.className = 'news-card';
+                card.onclick = () => openModal(category, article.id);
+                card.innerHTML = `
+                    <div class="card-image ${article.color}">${article.emoji}</div>
+                    <div class="card-content">
+                        <span class="card-category">${article.category}</span>
+                        <h2 class="card-title">${article.title}</h2>
+                        <p class="card-preview">${article.text.substring(0, 100)}...</p>
+                        <span class="read-more">Read More →</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Tab switching
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-selected', 'false');
+            });
+            
+            document.getElementById(sectionId).classList.add('active');
+            event.target.closest('.tab-btn').classList.add('active');
+            event.target.closest('.tab-btn').setAttribute('aria-selected', 'true');
+        }
+
+        // Modal functions
+        function openModal(category, articleId) {
+            const article = articles[category].find(a => a.id === articleId);
+            if (!article) return;
+            
+            currentArticleId = articleId;
+            currentCategory = category;
+            
+            document.getElementById('modalEmoji').textContent = article.emoji;
+            document.getElementById('modalTitle').textContent = article.title;
+            document.getElementById('modalText').textContent = article.text;
+            document.getElementById('modalExtra').textContent = article.extra;
+            
+            // Reset feedback
+            document.querySelectorAll('.feedback-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('feedbackMessage').classList.remove('show');
+            document.getElementById('feedbackMessage').textContent = '';
+            
+            document.getElementById('articleModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Update stats
+            stats.totalRead++;
+            saveStats();
+            updateStatsDisplay();
+        }
+
+        function closeModal(event) {
+            if (!event || event.target === document.getElementById('articleModal') || event.target.classList.contains('close-btn')) {
+                document.getElementById('articleModal').classList.remove('active');
+                document.body.style.overflow = 'auto';
+                currentArticleId = null;
+                currentCategory = null;
+            }
+        }
+
+        // Feedback function
+        function submitFeedback(isLiked) {
+            if (!currentCategory) return;
+            
+            // Visual feedback
+            document.querySelectorAll('.feedback-btn').forEach(btn => btn.classList.remove('selected'));
+            const btn = isLiked ? 
+                document.querySelector('.feedback-btn.thumbs-up') : 
+                document.querySelector('.feedback-btn.thumbs-down');
+            btn.classList.add('selected');
+            
+            // Update stats
+            if (isLiked) {
+                stats.liked++;
+                stats.categoryLikes[currentCategory]++;
+            } else {
+                stats.disliked++;
+            }
+            saveStats();
+            updateStatsDisplay();
+            
+            // Show message
+            const msg = document.getElementById('feedbackMessage');
+            if (isLiked) {
+                msg.textContent = 'Great! We\'ll show you more stories like this! 🌟';
+                msg.style.color = '#48bb78';
+            } else {
+                msg.textContent = 'Thanks for letting us know! We\'ll find different stories for you! 💙';
+                msg.style.color = '#4299e1';
+            }
+            msg.classList.add('show');
+        }
+
+        // Update stats display
+        function updateStatsDisplay() {
+            document.getElementById('totalRead').textContent = stats.totalRead;
+            document.getElementById('likedCount').textContent = stats.liked;
+            document.getElementById('currentStreak').textContent = stats.currentStreak;
+            
+            // Calculate favorite category
+            let maxLikes = 0;
+            let favorite = '-';
+            for (const [cat, likes] of Object.entries(stats.categoryLikes)) {
+                if (likes > maxLikes) {
+                    maxLikes = likes;
+                    favorite = cat.charAt(0).toUpperCase() + cat.slice(1);
+                }
+            }
+            document.getElementById('favoriteCategory').textContent = favorite;
+        }
+
+        // Challenge functions
+        function newChallenge() {
+            const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
+            const challengeText = document.getElementById('challengeText');
+            challengeText.style.opacity = '0';
+            setTimeout(() => {
+                challengeText.textContent = randomChallenge;
+                challengeText.style.opacity = '1';
+            }, 300);
+        }
+
+        // Set current date
+        function setDate() {
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', options);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Initialize when page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
